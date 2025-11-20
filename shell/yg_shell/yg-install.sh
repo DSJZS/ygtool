@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Usage: yg.sh tool_dir
+
+tools_bin_dir="$HOME/.local/bin/yg-shell/"
+tools_share_dir="$HOME/.local/share/yg-shell/"
+
+function yg_install {
+    local tool_dir=$1
+    local csv_file=$tool_dir/yg.csv
+    
+    if [ ! -d $tool_dir ]; then
+        echo "You should provide a directory which stores ygtool files"
+	return 1
+    elif [ ! -x $tool_dir ] || [ ! -r $tool_dir ]; then
+	echo "It seems that you have NO permission to read the directory of the ygtool"
+        return 2
+    elif [ ! -w $tools_share_dir ]; then 
+	echo "It seems that you have NO permission to write the $tools_share_dir"
+	return 3
+    elif [ !  -w $tools_bin_dir ]; then 
+	echo "It seems that you have NO permission to write the $tools_bin_dir"
+	return 4
+    elif [ ! -f $csv_file ] || [ ! -r $csv_file ]; then
+	echo "Please create a csv file to specify how to install scripts"
+	return 5
+    else 
+	# cp -r $tool_dir $tools_share_dir
+        # echo -e "$tools_bin_dir\t\t$tools_share_dir"
+	while IFS=',' read -r script link; do
+	    echo -e "$link \t->\t $script"
+	done < "$csv_file"
+    fi
+    
+    # echo "Installed $(basename $tool_dir) successfully"
+    return 0
+}
+
+if [ ! $# -eq 1 ]; then
+    echo "Just one parameter"
+    exit 6
+else
+    yg_install $1
+    exit $?
+fi
