@@ -39,6 +39,7 @@ function yg_install {
 		echo -e "$link \t->\t $script \t (new)"
 	    fi
 	done < "$csv_file"
+	chmod u+x $script_dir*.sh
     fi
     
     # echo "Installed $(basename $tool_dir) successfully"
