@@ -9,7 +9,7 @@ function yg_usage {
     echo "-u <directory>        Uninstall, uninstall a ygtool"
     echo "-l                    List, list all ygtools installed"
     echo "-h                    Help, show the usage of yg-shell"
-    echo 
+    echo
     echo "EXAMPLE:"
     echo "yg-shell -l"
     echo "yg-shell -i yg_tools/"

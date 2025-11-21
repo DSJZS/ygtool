@@ -1,7 +1,7 @@
 #!/bin/bash
 
-tools_bin_dir="$HOME/.local/bin/yg-shell/"
-tools_share_dir="$HOME/.local/share/yg-shell/"
+tools_bin_dir="$HOME/.local/bin/yg/"
+tools_share_dir="$HOME/.local/share/yg/"
 
 function yg_list {
     if [ ! -d $tools_share_dir ]; then

@@ -2,13 +2,16 @@
 
 # Usage: yg.sh tool_dir
 
-tools_bin_dir="$HOME/.local/bin/yg-shell/"
-tools_share_dir="$HOME/.local/share/yg-shell/"
+tools_bin_dir="$HOME/.local/bin/yg/"
+tools_share_dir="$HOME/.local/share/yg/"
 
 function yg_install {
-    local tool_dir=$1
-    local csv_file=$tool_dir/yg.csv
-    
+    local tool_dir="$1"
+    local csv_file="$tool_dir/yg.csv"
+    local tool_name="$(basename $(realpath -m $tool_dir))"
+    local script_dir="$tools_share_dir$tool_name/"
+    local link_dir="$tools_bin_dir"
+
     if [ ! -d $tool_dir ]; then
         echo "You should provide a directory which stores ygtool files"
 	return 1
@@ -24,10 +27,11 @@ function yg_install {
     elif [ ! -f $csv_file ] || [ ! -r $csv_file ]; then
 	echo "Please create a csv file to specify how to install scripts"
 	return 5
-    else 
-	# cp -r $tool_dir $tools_share_dir
-        # echo -e "$tools_bin_dir\t\t$tools_share_dir"
+    else
+	cp -r $tool_dir $script_dir
+
 	while IFS=',' read -r script link; do
+	    ln -s  $script_dir$script $link_dir$link
 	    echo -e "$link \t->\t $script"
 	done < "$csv_file"
     fi
@@ -43,3 +47,4 @@ else
     yg_install $1
     exit $?
 fi
+

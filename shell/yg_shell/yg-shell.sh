@@ -9,26 +9,34 @@ function log {
     fi
 }
 
+prefix="."
+if [ ! $(basename $0) = "yg-shell.sh" ]; then
+   tool_name="yg_shell"
+   tool_share_dir="$HOME/.local/share/yg/$tool_name"
+   prefix=$tool_share_dir
+fi
+
 while [ -n "$1" ]; do
     opt="$1"
     case "$opt" in
         -i) # echo "install" 
 	   param=$2
-	   ./yg-install.sh $param
+	   $prefix/yg-install.sh $param
 	   log $?
 	   shift ;;
 	-l) # echo "list" 
-	   ./yg-list.sh ;;
+	   $prefix/yg-list.sh ;;
 	-u) # echo "uninstall" 
 	   param=$2
-	   ./yg-uninstall.sh $param
+	   $prefix/yg-uninstall.sh $param
 	   log $?
 	   shift ;;
 	-h) # echo "help"
-	   ./yg-help.sh ;;
+	   $prefix/yg-help.sh ;;
 	--) shift
 	    break ;;
 	*) echo "unknow option: $opt" ;;
     esac
     shift
 done
+
