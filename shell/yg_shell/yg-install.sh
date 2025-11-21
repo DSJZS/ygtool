@@ -31,8 +31,12 @@ function yg_install {
 	cp -r $tool_dir $script_dir
 
 	while IFS=',' read -r script link; do
-	    ln -s  $script_dir$script $link_dir$link
-	    echo -e "$link \t->\t $script"
+	    ln -s  $script_dir$script $link_dir$link 2> /dev/null
+	    if [ $? -ne 0 ]; then
+		echo -e "$link \t->\t $script \t (update)"
+	    else
+		echo -e "$link \t->\t $script \t (new)"
+	    fi
 	done < "$csv_file"
     fi
     
