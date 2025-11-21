@@ -29,7 +29,8 @@ function yg_install {
 	return 5
     else
 	cp -r $tool_dir $script_dir
-
+        
+	local script link
 	while IFS=',' read -r script link; do
 	    ln -s  $script_dir$script $link_dir$link 2> /dev/null
 	    if [ $? -ne 0 ]; then

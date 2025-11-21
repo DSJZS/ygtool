@@ -21,6 +21,7 @@ function yg_uninstall {
 	echo "Please create a csv file to specify how to install scripts"
 	return 5
     else
+	local script link
 	while IFS=',' read -r script link; do
 	    rm "$link_dir$link"
 	    echo -e "$link \t->\t $script \t (delete)"
