@@ -1,0 +1,6 @@
+#!/bin/bash
+yg-help.sh,yg-help
+yg-install.sh,yg-install
+yg-list.sh,yg-list
+yg-shell.sh,yg-shell
+yg-uninstall.sh,yg-uninstall
