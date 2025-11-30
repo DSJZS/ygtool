@@ -87,6 +87,28 @@ function translate_words {
     done
 }
 
+function add_word {
+    local word meaning
+    read -r word meaning <<< "$@"
+	echo "\"$word\",\"$meaning\"" >> "$USER_DICT_FILE"
+}
+
+function delete_words {
+    local word words
+	words="$@"
+
+	for word in $words; do
+		read -p "确定从用户自定义单词库删除: $word ? (y/N) >" ret
+
+		if [[ "$ret" =~ ^[yY]([eE][sS])?$ ]]; then
+		    sed -i "/^\"$word\"/d" "$USER_DICT_FILE"
+		    echo "已删除 $word"
+		else
+		    echo "不删除 $word"
+		fi
+	done
+}
+
 function help {
 echo "[error]: $1"
 echo
@@ -156,9 +178,11 @@ done
 
 case "$mode" in
     a)  # echo "add" 
-		;;
+		word=$1
+		shift
+		add_word $word "$@" ;;
     d)  # echo "delete" 
-		;;
+		delete_words "$@" ;;
     t | n) #  echo "translate" 
 		translate_words $is_ignore $is_verbose "$@" ;;
     *) echo "bug" 
