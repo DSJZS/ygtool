@@ -7,8 +7,8 @@ tools_share_dir="$HOME/.local/share/yg/"
 
 function yg_uninstall {
     local tool_name="$1"
-    local script_dir="$tools_share_dir$tool_name/"
-    local link_dir="$tools_bin_dir"
+    local script_dir="$tools_share_dir/$tool_name/"
+    local link_dir="$tools_bin_dir/"
     local csv_file="$script_dir/yg.csv"
 
     if [ ! -w $tools_share_dir ]; then 
@@ -23,7 +23,7 @@ function yg_uninstall {
     else
 	local script link
 	while IFS=',' read -r script link; do
-	    rm "$link_dir$link"
+	    rm "$link_dir/$link"
 	    echo -e "$link \t->\t $script \t (delete)"
 	done < "$csv_file"
 
