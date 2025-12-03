@@ -1,13 +1,19 @@
 #!/bin/bash
 
-# 用每天的日期作为文件的标识
-today=$(date +%y%m%d)
-backup_file="archive$today.tar.gz"
+# 用精确到分钟的时间作为文件的标识
+year=$(date +%Y)
+month=$(date +%m)
+day=$(date +%d)
+time=$(date +%H%M%S)
+
+backup_file="archive$time.tar.gz"
 
 # 设置配置文件和备份文件的位置
-file_prefix='/archive/daily/'
+file_prefix='/archive/hourly/'
 config_file="$file_prefix/files_to_backup.config"
-distination="$file_prefix/$backup_file"
+
+mkdir -p "$file_prefix/$year/$month/$day/"
+distination="$file_prefix/$year/$month/$day/$backup_file"
 
 # 检查配置文件是否存在
 if [ -f $config_file ]; then
