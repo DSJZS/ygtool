@@ -43,7 +43,7 @@ count=1
 while [ -n "$1" ]; do
     touch "$1"
     if [ $? -eq 0 ]; then
-        echo "$SHELL_PATH" >> "$1"
+        echo "#!$SHELL_PATH" >> "$1"
         chmod u+x "$1"
         echo "$count: $1"
         count=$[ $count + 1 ]
