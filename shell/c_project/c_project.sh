@@ -50,7 +50,7 @@ function error {
 # 处理路径, 使其更美观
 function make_path_pretty {
     local raw_path="$1"
-    local pretty_path=$(echo "$raw_path" | sed -n 's|///*|/|gp')
+    local pretty_path=$(echo "$raw_path" | sed 's|///*|/|g')
     echo "$pretty_path"
 }
 # 解析宏定义
