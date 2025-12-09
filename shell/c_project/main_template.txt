@@ -1,0 +1,8 @@
+#include <stdio.h>
+
+int main() 
+{
+    printf("Hello, World!\n");
+    printf("My name is ** project_name_replace **!\n");
+    return 0;
+}
