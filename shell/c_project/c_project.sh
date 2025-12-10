@@ -127,6 +127,7 @@ function create_new_project_template_file {
     local project_dir="$1/"
     local project_name="$2"
     local exe_name="$3"
+    local create_git_flag="$4"
 
     local template_dir="$CONFIG_DIR/text_template/"
 
@@ -148,6 +149,19 @@ function create_new_project_template_file {
             deal_macro "$path/$filename" "$EXE_NAME_MACRO" "$exe_name"
         fi
     done
+
+    if [ $create_git_flag = true ]; then
+        echo "正在初始化git仓库(会自动将主分支命名为main并进行初始化提交)..."
+        cat < "$template_dir/._.gitignore_template.txt" > "$project_dir/.gitignore"
+        cd "$project_dir"
+        git init
+        # 根据个人喜好，这里我修改了分支名并进行了一个初始化提交，可以根据需要修改或删除
+        git branch -m main
+        git add .
+        git commit -m "Initial commit"
+        cd - > /dev/null
+        echo "git仓库(包含忽略文件)初始化完成."
+    fi
 
     return 0
 }
@@ -232,21 +246,9 @@ function create_project {
     fi
 
     echo "正在创建一个新的C项目, 位置为目录: $(make_path_pretty $project_dir)"
-    create_new_project_template_file "$project_dir" "$project_name" "$exe_name"
+    create_new_project_template_file "$project_dir" "$project_name" "$exe_name" "$create_git_flag"
     mkdir -p "$src_dir" "$bin_dir" "$include_dir" "$build_dir" "$lib_dir"
 
-    if [ $create_git_flag = true ]; then
-        echo "正在初始化git仓库(会自动将主分支命名为main并进行初始化提交)..."
-        cat < "$CONFIG_DIR/gitignore_template.txt" > "$project_dir/.gitignore"
-        cd "$project_dir"
-        git init
-        # 根据个人喜好，这里我修改了分支名并进行了一个初始化提交，可以根据需要修改或删除
-        git branch -m main
-        git add .
-        git commit -m "Initial commit"
-        cd - > /dev/null
-        echo "git仓库(包含忽略文件)初始化完成."
-    fi
     echo
     echo "成功创建以下目录或者文件:"
     echo "====================="
