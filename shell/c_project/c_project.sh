@@ -133,7 +133,6 @@ function create_new_project_template_file {
 
     local path filename
     for template_filename in $(ls "$template_dir"); do
-        
         read -r path filename <<< "$(echo "$template_filename" | sed -n 's|\(.*\)_\(.*\)_template.txt|\1 \2|p')"
         
         if [ $path = "root" ]; then
@@ -278,9 +277,14 @@ function build_project {
         error "指定的项目目录不存在: $(make_path_pretty $project_dir) , 是否创建了该项目?"
     elif [ ! -f "$cmakelists_file" ]; then
         error "指定的项目目录下不存在CMakeLists.txt文件: $(make_path_pretty $cmakelists_file) , 请先创建该文件"
-    elif [ ! -d "$build_dir" ]; then
+    fi
+
+    if [ ! -d "$build_dir" ]; then
         echo "[WARNING]: 构建目录不存在, 正在创建目录: $(make_path_pretty $build_dir)"
         mkdir -p "$build_dir"
+        if [ $? -ne 0 ]; then
+            error "build目录创建失败, 可能有同名文件存在导致冲突产生"
+        fi
     fi
 
     echo "正在构建C项目, 构建位置为目录: $(make_path_pretty $build_dir)"
