@@ -70,6 +70,10 @@ function get_project_name {
     local project_dir="$1/"
     if [ $(basename $project_dir) = "." ]; then
         local project_name=$(basename "$(pwd)")
+    elif [ $(basename $project_dir) = ".." ]; then
+        cd ..
+        local project_name=$(basename "$(pwd)")
+        cd - > /dev/null
     else
         local project_name=$(basename "$project_dir")
     fi
