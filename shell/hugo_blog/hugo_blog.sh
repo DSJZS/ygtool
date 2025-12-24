@@ -77,12 +77,12 @@ function delete_blog {
 
 function help_me {
 cat << EOF
-Hugo博客管理脚本 - 帮助文档
+Hugo博客管理脚本
 
-该脚本用于管理Hugo博客的内容创作，支持创建、编辑、删除、查看和列出博客文章。
+该脚本用于管理Hugo博客的完整工作流，支持本地内容创作和Git推送部署。
 
 基本语法:
-    ./$(basename "$0") [选项]
+    hugo_blog [选项]
 
 选项说明:
     -d <博客名称>    删除指定名称的博客文章
@@ -93,6 +93,10 @@ Hugo博客管理脚本 - 帮助文档
                      例如：-e vim, -e nano, -e code
                      如果未指定，编辑功能将不可用。
     
+    -g               将博客更改推送到Git远程仓库
+                     执行: git add . → git commit → git push
+                     使用前请确保已正确配置GIT_REPO和GIT_BRANCH变量。
+    
     -h               显示此帮助文档
     
     -l               列出content/post/目录下的所有博客文章
@@ -101,37 +105,48 @@ Hugo博客管理脚本 - 帮助文档
                      这会执行: hugo new content/post/<博客名称>/index.zh-cn.md
     
     -p <目录路径>    指定Hugo博客项目的根目录路径（必需参数）
-                     例如：-p ~/my-hugo-blog/
+                     例如：-p ~/my-hugo-site/
     
     -r <博客名称>    阅读指定博客文章的内容
     
     -w <博客名称>    重新编辑（重写）已存在的博客文章
 
 使用示例:
-    1. 创建新博客并编辑:
-       ./$(basename "$0") -p ~/my-hugo-site/ -n "我的第一篇博客" -e vim
+    1. 完整工作流：创建博客并推送到Git仓库
+       hugo_blog -p ~/my-hugo-site/ -n "我的技术分享" -e vim
+       hugo_blog -p ~/my-hugo-site/ -g
     
-    2. 编辑已存在的博客:
-       ./$(basename "$0") -p ~/my-hugo-site/ -w "我的第一篇博客" -e code
+    2. 快速创建并推送新博客
+       hugo_blog -p ~/my-hugo-site/ -n "今日更新" -e nano
+       # 编辑完成后，直接推送
+       hugo_blog -p ~/my-hugo-site/ -g
     
-    3. 列出所有博客:
-       ./$(basename "$0") -p ~/my-hugo-site/ -l
+    3. 仅推送Git更改（不编辑内容）
+       hugo_blog -p ~/my-hugo-site/ -g
     
-    4. 阅读博客内容:
-       ./$(basename "$0") -p ~/my-hugo-site/ -r "我的第一篇博客"
+    4. 编辑已存在的博客并推送
+       hugo_blog -p ~/my-hugo-site/ -w "旧文章优化" -e code
+       hugo_blog -p ~/my-hugo-site/ -g
     
-    5. 删除博客:
-       ./$(basename "$0") -p ~/my-hugo-site/ -d "我的第一篇博客"
+    5. 列出所有博客
+       hugo_blog -p ~/my-hugo-site/ -l
     
-    6. 仅创建博客但不编辑:
-       ./$(basename "$0") -p ~/my-hugo-site/ -n "我的第二篇博客"
+    6. 阅读博客内容
+       hugo_blog -p ~/my-hugo-site/ -r "我的技术分享"
+    
+    7. 删除博客并同步到Git
+       hugo_blog -p ~/my-hugo-site/ -d "过时内容"
+       hugo_blog -p ~/my-hugo-site/ -g
+
+脚本配置提示（请编辑脚本开头的变量）:
+    • GIT_REPO="repo_ssh"    # 远程仓库别名（如origin）或SSH地址
+    • GIT_BRANCH="main"      # 推送的目标分支
 
 重要提示:
     • -p 选项是必需的，必须指定Hugo博客项目的根目录
-    • 脚本会先切换到指定目录再执行操作
-    • 博客名称不能包含特殊字符或路径分隔符
-    • 确保Hugo已正确安装并配置
-    • 编辑功能需要正确设置-e选项并确保编辑器可用
+    • -g 选项会执行完整Git流程：添加所有更改 → 交互式提交 → 推送到远程
+    • 脚本会自动切换到指定目录执行操作，完成后返回原目录
+    • Git推送会打开默认编辑器编辑提交信息，请准备好合适的提交消息
 
 EOF
 }
@@ -173,7 +188,7 @@ function run_script_func {
 }
 
 # 处理选项与命令行参数
-set -- $(getopt d:e:g:hln:p:r:w: "$@")
+set -- $(getopt d:e:ghln:p:r:w: "$@")
 
 while [ -n "$1" ]; do
     case "$1" in
