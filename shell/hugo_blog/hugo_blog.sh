@@ -14,12 +14,18 @@ BLOG_ROOT_DIR_PATH=""
 MODE="NONE"
 OPTION_FLAG=""
 
+ALL_YES='NO'
+
 function err_log {
     echo "[ERROR]: $1"
     exit 0
 }
 
 function yes_or_no {
+    if [ $ALL_YES = 'YES' ]; then
+        return 0
+    fi
+
     read -p "[Question] $1 | yes or no >: " user_input
     case "$user_input" in
         y|Y|yes|Yes|yEs|yeS|YEs|YeS|yES|YES)                                                                                       
@@ -33,7 +39,7 @@ function set_mode {
     if [ $MODE = "NONE" ]; then
         MODE="$1"
     else
-        err_log "不能同时设置为创建、删除或者(重)写模式"
+        err_log "不能同时设置多个模式，请只设置一个模式"
     fi
 }
 
@@ -127,7 +133,11 @@ Hugo博客管理脚本
     
     -r <博客名称>    阅读指定博客文章的内容
     
+    -t               打开开发服务器以查看网站
+
     -w <博客名称>    重新编辑（重写）已存在的博客文章
+
+    -y               Yes or No 时默认为 Yes
 
 使用示例:
     1. 完整工作流：创建博客并推送到Git仓库
@@ -196,6 +206,11 @@ function git_push_blogs {
     fi
 }
 
+function build_drafts {
+    # hugo server --buildDrafts
+    hugo server -D
+}
+
 function run_script_func {
     cd "$BLOG_ROOT_DIR_PATH"
     
@@ -206,7 +221,7 @@ function run_script_func {
 }
 
 # 处理选项与命令行参数
-set -- $(getopt d:e:ghln:p:r:w: "$@")
+set -- $(getopt d:e:ghln:p:r:tw:y "$@")
 # echo "$@"
 while [ -n "$1" ]; do
     case "$1" in
@@ -267,12 +282,21 @@ while [ -n "$1" ]; do
             BLOG_NAME="$2"
             shift
             ;;
+        #  "Test / buildDrafts / Develop 开启测试服务器"
+        -t)
+            OPTION_FLAG='TEST'
+            set_mode 'TEST'
+            ;;
         #  "(Re)write 重写博客 "
         -w)
             OPTION_FLAG='WRITE'
             set_mode 'WRITE'
             BLOG_NAME="$2"
             shift
+            ;;
+        #  "All YES 默认为Yes "
+        -y)
+            ALL_YES='YES'
             ;;
         --) shift; break;;
         *)  
@@ -300,6 +324,8 @@ elif [ $MODE = "READ" ]; then
     run_script_func 'read_blog'
 elif [ $MODE = "GIT" ]; then
     run_script_func 'git_push_blogs'
+elif [ $MODE = 'TEST' ]; then
+    run_script_func 'build_drafts'
 else
     err_log "必须指定模式为创建博客、删除博客或者(重)写博客，并添加上博客的名称"
 fi
