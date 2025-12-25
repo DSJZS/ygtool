@@ -19,6 +19,16 @@ function err_log {
     exit 0
 }
 
+function yes_or_no {
+    read -p "[Question] $1 | yes or no >: " user_input
+    case "$user_input" in
+        y|Y|yes|Yes|yEs|yeS|YEs|YeS|yES|YES)                                                                                       
+            return 0;;
+        *)   
+            return 1;;
+    esac    
+}
+
 function set_mode {
     if [ $MODE = "NONE" ]; then
         MODE="$1"
@@ -50,7 +60,10 @@ function new_blog {
     hugo new "content/post/$BLOG_NAME/index.zh-cn.md" 
 
     if [ $? -ne 0 ]; then
-        err_log "创建博客 $BLOG_NAME 失败。原因如上，脚本中止!"
+        echo "[Warning]:创建博客 $BLOG_NAME 失败。原因如上，创建中止!"
+        if ! yes_or_no "是否转为重新编辑该博客?"; then
+            err_log "创建博客 $BLOG_NAME 失败!"
+        fi
     else
         echo "创建博客 $BLOG_NAME 成功!"
     fi
@@ -59,6 +72,10 @@ function new_blog {
 }
 
 function delete_blog {
+    if ! yes_or_no "真的决定删除了吗?"; then
+        return 0
+    fi
+
     # 需要安装 trash-cli 工具
     if which 'trash-put' &> /dev/null; then
         trash-put "content/post/$BLOG_NAME/"
