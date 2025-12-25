@@ -12,6 +12,7 @@ TEXT_EDITOR=""
 BLOG_ROOT_DIR_PATH=""
 
 MODE="NONE"
+OPTION_FLAG=""
 
 function err_log {
     echo "[ERROR]: $1"
@@ -28,12 +29,12 @@ function set_mode {
 
 function edit_blog {
     if [ -n "$TEXT_EDITOR" ]; then
-        if ! ls content/post/"$BLOG_NAME"/index.zh-cn.md &> /dev/null; then
+        if ! ls "content/post/$BLOG_NAME/index.zh-cn.md" &> /dev/null; then
             err_log "不存在该博客，真的创建了吗？"
         fi
 
         echo "开始编辑博客 $BLOG_NAME ......"
-        "$TEXT_EDITOR" content/post/"$BLOG_NAME"/index.zh-cn.md
+        "$TEXT_EDITOR" "content/post/$BLOG_NAME/index.zh-cn.md"
 
         if [ $? -ne 0 ]; then
             err_log "编辑博客 $BLOG_NAME 失败。原因如上，脚本中止!"
@@ -46,7 +47,7 @@ function edit_blog {
 }
 
 function new_blog {
-    hugo new content/post/"$BLOG_NAME"/index.zh-cn.md 
+    hugo new "content/post/$BLOG_NAME/index.zh-cn.md" 
 
     if [ $? -ne 0 ]; then
         err_log "创建博客 $BLOG_NAME 失败。原因如上，脚本中止!"
@@ -60,12 +61,12 @@ function new_blog {
 function delete_blog {
     # 需要安装 trash-cli 工具
     if which 'trash-put' &> /dev/null; then
-        trash-put content/post/"$BLOG_NAME"/
+        trash-put "content/post/$BLOG_NAME/"
     # 使用不安全的命令 rm
     else
         echo "[WARNING]: 正在使用不安全的 rm 命令删除，注意删除的内容是否正确"
         echo "[VERBOSE]: 建议安装 trash-cli 工具"
-        rm -r content/post/"$BLOG_NAME"/
+        rm -r "content/post/$BLOG_NAME/"
     fi
 
     if [ $? -ne 0 ]; then
@@ -152,15 +153,15 @@ EOF
 }
 
 function read_blog {
-    if ! ls content/post/"$BLOG_NAME"/index.zh-cn.md &> /dev/null; then
+    if ! ls "content/post/$BLOG_NAME/index.zh-cn.md" &> /dev/null; then
         err_log "不存在该博客，真的创建了吗？"
     else
-        cat content/post/"$BLOG_NAME"/index.zh-cn.md
+        cat "content/post/$BLOG_NAME/index.zh-cn.md"
     fi
 }
 
 function list_blog {
-    ls content/post/
+    ls "content/post/"
 }
 
 function git_push_blogs {
@@ -189,17 +190,19 @@ function run_script_func {
 
 # 处理选项与命令行参数
 set -- $(getopt d:e:ghln:p:r:w: "$@")
-
+# echo "$@"
 while [ -n "$1" ]; do
     case "$1" in
         #  "DELETE 删除博客"
         -d) 
+            OPTION_FLAG='DELETE'
             set_mode 'DELETE'
             BLOG_NAME="$2"
             shift
             ;;
         #  "Text Editor 文本编辑器"
         -e) 
+            OPTION_FLAG='EDIT'
             if which "$2" &> /dev/null; then
                 TEXT_EDITOR="$2"
                 shift
@@ -209,25 +212,30 @@ while [ -n "$1" ]; do
             ;;
         #  "Git Push Git推送博客"
         -g)
+            OPTION_FLAG='GIT'
             set_mode 'GIT'
             ;;
         #  "Help 帮助文档"
         -h)
+            OPTION_FLAG='HELP'
             help_me
             exit 0
             ;;
         #  "List 列出所有博客"
         -l)
+            OPTION_FLAG='LIST'
             set_mode 'LIST'
             ;;
         #  "New 创建博客"
         -n) 
+            OPTION_FLAG='NEW'
             set_mode 'NEW'
             BLOG_NAME="$2"
             shift
             ;;
         #  "Blog Root Directory Path 文本根目录路径"
         -p) 
+            OPTION_FLAG='PATH'
             if ls "$2" &> /dev/null; then
                 BLOG_ROOT_DIR_PATH="$2/"
                 shift
@@ -237,18 +245,26 @@ while [ -n "$1" ]; do
             ;;
         #  "Read 读博客"
         -r)
+            OPTION_FLAG='READ'
             set_mode 'READ'
             BLOG_NAME="$2"
             shift
             ;;
         #  "(Re)write 重写博客 "
         -w)
+            OPTION_FLAG='WRITE'
             set_mode 'WRITE'
             BLOG_NAME="$2"
             shift
             ;;
         --) shift; break;;
-        *)  error "未知的选项!!!";;
+        *)  
+            if [ $OPTION_FLAG = "NEW" ] || [ $OPTION_FLAG = "DELETE" ] || [ $OPTION_FLAG = "WRITE" ] || [ $OPTION_FLAG = "READ" ]; then
+                BLOG_NAME="$BLOG_NAME $1"
+            else
+                err_log "未知的选项!!!"
+            fi
+            ;;
     esac
     shift
 done
