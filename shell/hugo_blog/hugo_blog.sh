@@ -198,8 +198,13 @@ function list_blog {
 function git_push_blogs {
     git add .
 
-    # 这里默认会打开文本编辑器编辑 Commit Log
-    git commit
+    local commit_log="$(date "+%Y-%m-%d %H:%M:%S") Update"
+    if yes_or_no "是否用 '$commit_log' 作为内容的自动填写 Commit Log"; then
+        git commit -m "$commit_log"
+    else
+        # 这里默认会打开文本编辑器编辑 Commit Log
+        git commit
+    fi
     
     git push "$GIT_REPO" "$GIT_BRANCH"
 
