@@ -14,7 +14,7 @@ BLOG_ROOT_DIR_PATH=""
 MODE="NONE"
 OPTION_FLAG=""
 
-ALL_YES='NO'
+YES_OR_NO='OR'
 
 function err_log {
     echo "[ERROR]: $1"
@@ -22,8 +22,10 @@ function err_log {
 }
 
 function yes_or_no {
-    if [ $ALL_YES = 'YES' ]; then
+    if [ $YES_OR_NO = 'YES' ]; then
         return 0
+    elif [ $YES_OR_NO = 'NO' ]; then
+        return 1
     fi
 
     read -p "[Question] $1 | yes or no >: " user_input
@@ -62,7 +64,7 @@ function edit_blog {
     fi
 }
 
-function new_blog {
+function create_blog {
     hugo new "content/post/$BLOG_NAME/index.zh-cn.md" 
 
     if [ $? -ne 0 ]; then
@@ -109,6 +111,9 @@ Hugo博客管理脚本
     hugo_blog [选项]
 
 选项说明:
+    -c <博客名称>    创建新的博客文章，并打开编辑器进行编辑
+                    这会执行: hugo new content/post/<博客名称>/index.zh-cn.md
+                    
     -d <博客名称>    删除指定名称的博客文章
                      注意：如果系统安装了trash-cli工具，会使用trash-put安全删除；
                      否则使用rm命令直接删除，请谨慎操作。
@@ -124,9 +129,8 @@ Hugo博客管理脚本
     -h               显示此帮助文档
     
     -l               列出content/post/目录下的所有博客文章
-    
-    -n <博客名称>    创建新的博客文章，并打开编辑器进行编辑
-                     这会执行: hugo new content/post/<博客名称>/index.zh-cn.md
+
+    -n              Yes or No 时默认为 No
     
     -p <目录路径>    指定Hugo博客项目的根目录路径（必需参数）
                      例如：-p ~/my-hugo-site/
@@ -141,11 +145,11 @@ Hugo博客管理脚本
 
 使用示例:
     1. 完整工作流：创建博客并推送到Git仓库
-       hugo_blog -p ~/my-hugo-site/ -n "我的技术分享" -e vim
+       hugo_blog -p ~/my-hugo-site/ -c "我的技术分享" -e vim
        hugo_blog -p ~/my-hugo-site/ -g
     
     2. 快速创建并推送新博客
-       hugo_blog -p ~/my-hugo-site/ -n "今日更新" -e nano
+       hugo_blog -p ~/my-hugo-site/ -c "今日更新" -e nano
        # 编辑完成后，直接推送
        hugo_blog -p ~/my-hugo-site/ -g
     
@@ -221,10 +225,17 @@ function run_script_func {
 }
 
 # 处理选项与命令行参数
-set -- $(getopt d:e:ghln:p:r:tw:y "$@")
+set -- $(getopt c:d:e:ghlnp:r:tw:y "$@")
 # echo "$@"
 while [ -n "$1" ]; do
     case "$1" in
+        #  "Create 创建博客"
+        -c) 
+            OPTION_FLAG='CREATE'
+            set_mode 'CREATE'
+            BLOG_NAME="$2"
+            shift
+            ;;
         #  "DELETE 删除博客"
         -d) 
             OPTION_FLAG='DELETE'
@@ -258,12 +269,9 @@ while [ -n "$1" ]; do
             OPTION_FLAG='LIST'
             set_mode 'LIST'
             ;;
-        #  "New 创建博客"
-        -n) 
-            OPTION_FLAG='NEW'
-            set_mode 'NEW'
-            BLOG_NAME="$2"
-            shift
+        #  "No 默认为 No"
+        -n)
+            YES_OR_NO='NO'
             ;;
         #  "Blog Root Directory Path 文本根目录路径"
         -p) 
@@ -287,20 +295,20 @@ while [ -n "$1" ]; do
             OPTION_FLAG='TEST'
             set_mode 'TEST'
             ;;
-        #  "(Re)write 重写博客 "
+        #  "(Re)write (重)写博客 "
         -w)
             OPTION_FLAG='WRITE'
             set_mode 'WRITE'
             BLOG_NAME="$2"
             shift
             ;;
-        #  "All YES 默认为Yes "
+        #  "Yes 默认为Yes"
         -y)
-            ALL_YES='YES'
+            YES_OR_NO='YES'
             ;;
         --) shift; break;;
         *)  
-            if [ $OPTION_FLAG = "NEW" ] || [ $OPTION_FLAG = "DELETE" ] || [ $OPTION_FLAG = "WRITE" ] || [ $OPTION_FLAG = "READ" ]; then
+            if [ $OPTION_FLAG = "CREATE" ] || [ $OPTION_FLAG = "DELETE" ] || [ $OPTION_FLAG = "WRITE" ] || [ $OPTION_FLAG = "READ" ]; then
                 BLOG_NAME="$BLOG_NAME $1"
             else
                 err_log "未知的选项!!!"
@@ -312,8 +320,8 @@ done
 
 if [ -z "$BLOG_ROOT_DIR_PATH" ]; then
     err_log "必须指定文本根目录路径"
-elif [ $MODE = "NEW" ]; then
-    run_script_func 'new_blog'
+elif [ $MODE = "CREATE" ]; then
+    run_script_func 'create_blog'
 elif [ $MODE = "DELETE" ]; then
     run_script_func 'delete_blog'
 elif [ $MODE = "WRITE" ]; then
