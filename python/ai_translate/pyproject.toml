@@ -1,0 +1,12 @@
+[project]
+name = "ai-translate"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "openai>=2.14.0",
+]
+
+[project.scripts]
+ai_trans = "ai_translate:main"
